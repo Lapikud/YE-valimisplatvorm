@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<!-- Required meta tags -->
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+		<!-- Bootstrap CSS -->
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+		
+		<!-- Optional JavaScript -->
+		<!-- jQuery first, then Popper.js, then Bootstrap JS -->
+		<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+		
+		<script src="demoScript.js"></script>
+		
+		<title>Demo</title>
+	</head>
+	<body>
+		<div class="container">
+			<form class="needs-validation" novalidate>
+				<div class="form-row">
+					<div class="col-md-4 mb-3">
+						<label for="validationCustom01">Eesnimi</label>
+						<input type="text" class="form-control" id="validationCustom01" placeholder="First name" required>
+					</div>
+					<div class="col-md-4 mb-3">
+						<label for="validationCustom02">Perekonnanimi</label>
+						<input type="text" class="form-control" id="validationCustom02" placeholder="Last name" required>
+					</div>
+					<div class="col-md-4 mb-3">
+						<label for="optionalImage">Pilt</label>
+						<div class="custom-file" id="optionalImage">
+							<input type="file" class="custom-file-input" id="customFile" accept="image/*">
+							<label class="custom-file-label text-truncate" for="customFile">Choose file</label>
+						</div>
+					</div>
+				</div>
+				<div class="form-row">
+					<div class="col-md-6 mb-3">
+						<label for="validationCustom03">Teaduskond</label>
+						<select class="form-control" id="validationCustom03" required>
+							<option value="">Choose...</option>
+							<option value="IT-teaduskond">IT-teaduskond</option>
+							<option value="Majandusteaduskond">Majandusteaduskond</option>
+						</select>
+						<div class="invalid-feedback">
+							Valige teaduskond.
+						</div>
+					</div>
+					<div class="col-md-3 mb-3">
+						<label for="validationCustom04">Eriala</label>
+						<input type="text" class="form-control" id="validationCustom04" required>
+					</div>
+					<div class="col-md-3 mb-3">
+						<label for="validationCustom05">Matriklinumber</label>
+						<input type="text" class="form-control" id="validationCustom05" required>
+					</div>
+				</div>
+				<div class="form-row">
+					<div class="col-md-4 mb-3">
+						<label for="validationCustom06">Telefon</label>
+						<input type="text" class="form-control" id="validationCustom06" required>
+					</div>
+					<div class="col-md-4 mb-3">
+						<label for="validationCustom07">E-mail</label>
+						<input type="text" class="form-control" id="validationCustom07" required>
+					</div>
+				</div>
+				<div class="form-row">
+					<div class="col-md- mb-3">
+						<label for="validationCustom08">Motivatsioonikiri vabas vormis (kuni 500 tähemärki)</label>
+						<textarea class="form-control" id="validationCustom08" rows="3" maxlength="500"></textarea>
+					</div>
+				</div>
+				<div class="form-row">
+					<div class="form-check">
+						<input class="form-check-input" type="checkbox" value="" id="invalidCheck" required>
+						<label class="form-check-label" for="invalidCheck">
+							Olen läbi lugenud <a href="http://www.neti.ee/" target="_blank">valimiste eeskirja</a>.
+						</label>
+						<div class="invalid-feedback">
+							Enne vormi saatmist tuleb nõustuda eeskirjas seatud kohustuste ja õigustega.
+						</div>
+					</div>
+				</div>
+				<button class="btn btn-primary" type="submit">Saada vorm</button>
+			</form>
+		</div>
+	</body>
+</html>
