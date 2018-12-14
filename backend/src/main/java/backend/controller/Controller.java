@@ -1,7 +1,7 @@
-package demo.controller;
+package backend.controller;
 
-import demo.bean.ApplicantForm;
-import demo.util.PdfGenerator;
+import backend.bean.ApplicantForm;
+import backend.util.PdfGenerator;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -30,3 +30,4 @@ public class Controller {
                 .body(new InputStreamResource(bis));
     }
 }
+

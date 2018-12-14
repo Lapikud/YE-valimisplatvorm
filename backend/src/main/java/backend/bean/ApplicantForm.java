@@ -1,4 +1,4 @@
-package demo.bean;
+package backend.bean;
 
 import java.awt.image.BufferedImage;
 

@@ -1,4 +1,4 @@
-group 'demoBackend'
+group 'backend'
 version '1.0-SNAPSHOT'
 
 apply plugin: 'java'
