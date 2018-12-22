@@ -13,7 +13,9 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 public class PdfGenerator {
 
@@ -42,8 +44,19 @@ public class PdfGenerator {
             createPdfHeaderText(contentStream, mediaBox, applicant.getDate());
             createApplicantContent(contentStream, mediaBox, applicant);
             createApplicantDataSheet(contentStream, mediaBox, applicant);
-
             contentStream.close();
+
+            if (applicant.getMotivationLetter() != null && applicant.getMotivationLetter().trim().length() > 0) {
+                PDPage secondPage = new PDPage(PDRectangle.A4);
+                mediaBox = secondPage.getMediaBox();
+                document.addPage(secondPage);
+
+                contentStream  = new PDPageContentStream(document, secondPage);
+                addPdfHeader(contentStream, mediaBox, pdfHeaderImage);
+                createApplicatnMotivationLetter(contentStream, mediaBox, applicant);
+
+                contentStream.close();
+            }
             document.save(byteArrayOutputStream);
             document.close();
         } catch (IOException e) {
@@ -104,6 +117,18 @@ public class PdfGenerator {
         contentStream.endText();
     }
 
+    private void createApplicatnMotivationLetter(PDPageContentStream contentStream, PDRectangle mediaBox, ApplicantForm applicant) throws IOException {
+        PDFont fontText = PDType1Font.TIMES_ROMAN;
+        contentStream.setFont(fontText, FONT_SIZE_TEXT);
+
+        float width = mediaBox.getWidth() - 2 * MARGIN_RIGHT;
+        float startX = mediaBox.getLowerLeftX() + MARGIN_RIGHT;
+        float startY = mediaBox.getUpperRightY() - MARGIN_TOP;
+        contentStream.beginText();
+        addParagraph(contentStream, width, startX, startY, applicant.getMotivationLetter(), true);
+        contentStream.endText();
+    }
+
     private void createApplicantDataSheet(PDPageContentStream contentStream, PDRectangle mediaBox, ApplicantForm applicant) throws IOException {
         contentStream.setLeading(23f);
 
@@ -133,5 +158,61 @@ public class PdfGenerator {
         contentStream.setFont(fontText, FONT_SIZE_TEXT);
         contentStream.showText(value);
         contentStream.newLine();
+    }
+
+    private static void addParagraph(PDPageContentStream contentStream, float width, float sx,
+                                     float sy, String text) throws IOException {
+        addParagraph(contentStream, width, sx, sy, text, false);
+    }
+
+    private static void addParagraph(PDPageContentStream contentStream, float width, float sx,
+                                     float sy, String text, boolean justify) throws IOException {
+        PDFont fontText = PDType1Font.TIMES_ROMAN;
+        List<String> lines = parseLines(text, width);
+        contentStream.setFont(fontText, FONT_SIZE_TEXT);
+        contentStream.newLineAtOffset(sx, sy);
+        for (String line: lines) {
+            float charSpacing = 0;
+            if (justify){
+                if (line.length() > 1) {
+                    float size = FONT_SIZE_TEXT * fontText.getStringWidth(line) / 1000;
+                    float free = width - size;
+                    if (free > 0 && !lines.get(lines.size() - 1).equals(line)) {
+                        charSpacing = free / (line.length() - 1);
+                    }
+                }
+            }
+            contentStream.setCharacterSpacing(charSpacing);
+            contentStream.showText(line);
+            contentStream.newLineAtOffset(0, -20f);
+        }
+    }
+
+    private static List<String> parseLines(String text, float width) throws IOException {
+        PDFont fontText = PDType1Font.TIMES_ROMAN;
+        List<String> lines = new ArrayList<String>();
+        int lastSpace = -1;
+        while (text.length() > 0) {
+            int spaceIndex = text.indexOf(' ', lastSpace + 1);
+            if (spaceIndex < 0)
+                spaceIndex = text.length();
+            String subString = text.substring(0, spaceIndex);
+            float size = FONT_SIZE_TEXT * fontText.getStringWidth(subString) / 1000;
+            if (size > width) {
+                if (lastSpace < 0){
+                    lastSpace = spaceIndex;
+                }
+                subString = text.substring(0, lastSpace);
+                lines.add(subString);
+                text = text.substring(lastSpace).trim();
+                lastSpace = -1;
+            } else if (spaceIndex == text.length()) {
+                lines.add(text);
+                text = "";
+            } else {
+                lastSpace = spaceIndex;
+            }
+        }
+        return lines;
     }
 }
