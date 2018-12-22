@@ -17,8 +17,8 @@ public class Controller {
 
     @PostMapping(value = "/generate", produces = MediaType.APPLICATION_PDF_VALUE)
     public ResponseEntity<InputStreamResource> generatePDF(@RequestBody ApplicantForm newApplicant) {
-
-        ByteArrayInputStream bis = PdfGenerator.generateApplicantPdf(newApplicant);
+        PdfGenerator pdfGenerator = new PdfGenerator();
+        ByteArrayInputStream bis = pdfGenerator.generateApplicantPdf(newApplicant);
 
         HttpHeaders headers = new HttpHeaders();
         headers.add("Content-Disposition", "inline; filename=coooooooolllllll.pdf");

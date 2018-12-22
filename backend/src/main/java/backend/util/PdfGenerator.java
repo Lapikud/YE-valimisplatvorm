@@ -1,72 +1,97 @@
 package backend.util;
 
 import backend.bean.ApplicantForm;
-import com.itextpdf.text.Document;
-import com.itextpdf.text.DocumentException;
-import com.itextpdf.text.Element;
-import com.itextpdf.text.Font;
-import com.itextpdf.text.FontFactory;
-import com.itextpdf.text.Phrase;
-import com.itextpdf.text.pdf.PdfPCell;
-import com.itextpdf.text.pdf.PdfPTable;
-import com.itextpdf.text.pdf.PdfWriter;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDPage;
+import org.apache.pdfbox.pdmodel.PDPageContentStream;
+import org.apache.pdfbox.pdmodel.common.PDRectangle;
+import org.apache.pdfbox.pdmodel.font.PDFont;
+import org.apache.pdfbox.pdmodel.font.PDType1Font;
+import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 
 public class PdfGenerator {
 
-    public static ByteArrayInputStream generateApplicantPdf(ApplicantForm applicant) {
-        Document document = new Document();
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
+    private static int MARGIN_TOP = 160;
+    private static int MARGIN_LEFT = 50;
+    private static int BEGIN_CONTENT = 300;
+    private static int FONT_SIZE_TEXT = 12;
+
+    public ByteArrayInputStream generateApplicantPdf(ApplicantForm applicant) {
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+
+        PDDocument document = new PDDocument();
+        PDPage page = new PDPage(PDRectangle.A4);
+        PDRectangle mediaBox = page.getMediaBox();
+        document.addPage(page);
 
         try {
-            PdfPTable table = new PdfPTable(3);
-            table.setWidthPercentage(60);
-            table.setWidths(new int[]{1, 3, 3});
-            Font headFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD);
+            PDImageXObject pdfHeaderImage = PDImageXObject.createFromFile("src/main/resources/template/application_header_old.png", document);
 
-            PdfPCell hcell;
-            hcell = new PdfPCell(new Phrase("Eesnimi", headFont));
-            hcell.setHorizontalAlignment(Element.ALIGN_CENTER);
-            table.addCell(hcell);
+            PDPageContentStream contentStream  = new PDPageContentStream(document, page);
+            float scale = mediaBox.getWidth() / pdfHeaderImage.getWidth();
+            contentStream.drawImage(pdfHeaderImage, 0, mediaBox.getHeight() - pdfHeaderImage.getHeight() * scale,
+                    mediaBox.getWidth(), pdfHeaderImage.getHeight() * scale);
 
-            hcell = new PdfPCell(new Phrase("Perekonnanimi", headFont));
-            hcell.setHorizontalAlignment(Element.ALIGN_CENTER);
-            table.addCell(hcell);
+            createPdfHeader(contentStream, mediaBox);
+            createApplicantContent(contentStream, mediaBox, applicant);
 
-            hcell = new PdfPCell(new Phrase("Email", headFont));
-            hcell.setHorizontalAlignment(Element.ALIGN_CENTER);
-            table.addCell(hcell);
-
-            PdfPCell cell;
-
-            cell = new PdfPCell(new Phrase(applicant.getFirstName()));
-            cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
-            cell.setHorizontalAlignment(Element.ALIGN_CENTER);
-            table.addCell(cell);
-
-            cell = new PdfPCell(new Phrase(applicant.getLastName()));
-            cell.setPaddingLeft(5);
-            cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
-            cell.setHorizontalAlignment(Element.ALIGN_LEFT);
-            table.addCell(cell);
-
-            cell = new PdfPCell(new Phrase(applicant.getEmail()));
-            cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
-            cell.setHorizontalAlignment(Element.ALIGN_RIGHT);
-            cell.setPaddingRight(5);
-            table.addCell(cell);
-
-            PdfWriter.getInstance(document, out);
-            document.open();
-            document.add(table);
-
+            contentStream.close();
+            document.save(byteArrayOutputStream);
             document.close();
-
-        } catch (DocumentException ex) {
-            System.out.println("Sumthing fucced up");
+        } catch (IOException e) {
+            e.printStackTrace();
         }
 
-        return new ByteArrayInputStream(out.toByteArray());
+        return new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
+    }
+
+    private void createPdfHeader(PDPageContentStream contentStream, PDRectangle mediaBox) throws IOException {
+        PDFont fontText = PDType1Font.TIMES_ROMAN;
+        contentStream.beginText();
+        contentStream.setFont(fontText, FONT_SIZE_TEXT);
+        contentStream.setLeading(20f);
+        contentStream.newLineAtOffset(MARGIN_LEFT, mediaBox.getHeight() - MARGIN_TOP);
+
+        contentStream.showText("TalTech Üliõpilasesinduse valimiskomisjonile");
+        contentStream.newLine();
+        contentStream.showText("Tallinna Tehnikaülikool");
+        contentStream.newLine();
+        contentStream.showText("Ehitajate tee 5");
+        contentStream.newLine();
+        contentStream.showText("19086 TALLINN");
+        contentStream.newLine();
+
+        contentStream.endText();
+    }
+
+    private void createApplicantContent(PDPageContentStream contentStream, PDRectangle mediaBox, ApplicantForm applicant) throws IOException {
+        contentStream.beginText();
+        contentStream.newLineAtOffset(MARGIN_LEFT, mediaBox.getHeight() - BEGIN_CONTENT);
+        contentStream.setLeading(23f);
+
+        createApplicantContentRow(contentStream, "Eesnimi", applicant.getFirstName());
+        createApplicantContentRow(contentStream, "Perekonnanimi", applicant.getLastName());
+        createApplicantContentRow(contentStream, "Matrikklinumber", applicant.getMatrikkel());
+        createApplicantContentRow(contentStream, "Teaduskond", applicant.getFaculty());
+        createApplicantContentRow(contentStream, "Eriala", applicant.getMajor());
+        createApplicantContentRow(contentStream, "Telefon", applicant.getPhoneNumber());
+        createApplicantContentRow(contentStream, "E-mail", applicant.getEmail());
+
+        contentStream.endText();
+    }
+
+    private void createApplicantContentRow(PDPageContentStream contentStream, String key, String value) throws IOException {
+        PDFont fontHeader = PDType1Font.TIMES_BOLD;
+        PDFont fontText = PDType1Font.TIMES_ROMAN;
+
+        contentStream.setFont(fontHeader, FONT_SIZE_TEXT);
+        contentStream.showText(key + ": ");
+        contentStream.setFont(fontText, FONT_SIZE_TEXT);
+        contentStream.showText(value);
+        contentStream.newLine();
     }
 }

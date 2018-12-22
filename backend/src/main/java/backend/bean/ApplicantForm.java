@@ -1,19 +1,21 @@
 package backend.bean;
 
 import java.awt.image.BufferedImage;
+import java.util.Date;
 
 public class ApplicantForm {
 
     private String firstName;
     private String lastName;
+    private String matrikkel;
     private String faculty;
     private String major;
-    private String matrikkel;
     private String phoneNumber;
     private String email;
-    private String motivationLetter;
     private boolean acceptedTerms;
+    private String motivationLetter;
     private BufferedImage image;
+    private Date date;
 
     public String getFirstName() {
         return firstName;
@@ -93,5 +95,13 @@ public class ApplicantForm {
 
     public void setImage(BufferedImage image) {
         this.image = image;
+    }
+
+    public Date getDate() {
+        return date;
+    }
+
+    public void setDate(Date date) {
+        this.date = date;
     }
 }
