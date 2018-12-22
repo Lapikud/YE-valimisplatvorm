@@ -1,21 +1,33 @@
 package backend.bean;
 
+import javax.validation.constraints.*;
 import java.awt.image.BufferedImage;
 import java.util.Date;
 
 public class ApplicantForm {
 
+    private Date date = new Date();
+    @NotBlank(message = "First name should not be empty")
     private String firstName;
+    @NotBlank(message = "Last name should not be empty")
     private String lastName;
+    @NotBlank(message = "Matrikkel should not be empty")
     private String matrikkel;
+    @NotBlank(message = "Faculty should not be empty")
     private String faculty;
+    @NotBlank(message = "Major should not be empty")
     private String major;
+    @NotBlank(message = "Phone number should not be empty")
     private String phoneNumber;
+    @NotBlank
+    @Email(message = "Email should be valid")
     private String email;
+    @NotNull
+    @AssertTrue(message = "Terms must be accepted")
     private boolean acceptedTerms;
+    @Size(max = 500, message = "Maximum motivation letter length is 500 characters")
     private String motivationLetter;
     private BufferedImage image;
-    private Date date = new Date();
 
     public String getFirstName() {
         return firstName;

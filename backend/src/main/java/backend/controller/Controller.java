@@ -10,18 +10,22 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.validation.Valid;
 import java.io.ByteArrayInputStream;
 
 @RestController
 public class Controller {
 
-    @PostMapping(value = "/generate", produces = MediaType.APPLICATION_PDF_VALUE)
-    public ResponseEntity<InputStreamResource> generatePDF(@RequestBody ApplicantForm newApplicant) {
+    @PostMapping(value = "/generate")
+    public ResponseEntity<InputStreamResource> generatePDF(@Valid @RequestBody ApplicantForm newApplicant) {
         PdfGenerator pdfGenerator = new PdfGenerator();
         ByteArrayInputStream bis = pdfGenerator.generateApplicantPdf(newApplicant);
 
+        String filename = String.format("kandideerimisavaldus_%s_%s.pdf",
+                newApplicant.getFirstName(), newApplicant.getLastName());
+
         HttpHeaders headers = new HttpHeaders();
-        headers.add("Content-Disposition", "inline; filename=avaldus.pdf");
+        headers.add("Content-Disposition", "inline; filename=" + filename);
 
         return ResponseEntity
                 .ok()
