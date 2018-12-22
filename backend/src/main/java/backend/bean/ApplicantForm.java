@@ -15,7 +15,7 @@ public class ApplicantForm {
     private boolean acceptedTerms;
     private String motivationLetter;
     private BufferedImage image;
-    private Date date;
+    private Date date = new Date();
 
     public String getFirstName() {
         return firstName;

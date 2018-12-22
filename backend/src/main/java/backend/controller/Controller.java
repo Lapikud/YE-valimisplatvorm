@@ -21,7 +21,7 @@ public class Controller {
         ByteArrayInputStream bis = pdfGenerator.generateApplicantPdf(newApplicant);
 
         HttpHeaders headers = new HttpHeaders();
-        headers.add("Content-Disposition", "inline; filename=coooooooolllllll.pdf");
+        headers.add("Content-Disposition", "inline; filename=avaldus.pdf");
 
         return ResponseEntity
                 .ok()
