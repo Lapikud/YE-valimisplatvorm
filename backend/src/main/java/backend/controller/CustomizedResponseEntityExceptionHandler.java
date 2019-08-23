@@ -1,6 +1,6 @@
 package backend.controller;
 
-import backend.bean.ErrorDetails;
+import backend.model.ErrorDetails;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

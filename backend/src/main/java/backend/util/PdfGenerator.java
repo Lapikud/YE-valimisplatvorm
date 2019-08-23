@@ -1,6 +1,6 @@
 package backend.util;
 
-import backend.bean.ApplicantForm;
+import backend.model.Applicant;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
@@ -27,7 +27,7 @@ public class PdfGenerator {
     private static int BEGIN_CONTENT = 260;
     private static int FONT_SIZE_TEXT = 12;
 
-    public ByteArrayInputStream generateApplicantPdf(ApplicantForm applicant) {
+    public ByteArrayInputStream generateApplicantPdf(Applicant applicant) {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
 
         PDDocument document = new PDDocument();
@@ -41,12 +41,12 @@ public class PdfGenerator {
             PDPageContentStream contentStream  = new PDPageContentStream(document, page);
 
             addPdfHeader(contentStream, mediaBox, pdfHeaderImage);
-            createPdfHeaderText(contentStream, mediaBox, applicant.getDate());
+            createPdfHeaderText(contentStream, mediaBox, new Date());
             createApplicantContent(contentStream, mediaBox, applicant);
             createApplicantDataSheet(contentStream, mediaBox, applicant);
             contentStream.close();
 
-            if (applicant.getMotivationLetter() != null && applicant.getMotivationLetter().trim().length() > 0) {
+            if (applicant.getMotivationalLetter() != null && applicant.getMotivationalLetter().trim().length() > 0) {
                 PDPage secondPage = new PDPage(PDRectangle.A4);
                 mediaBox = secondPage.getMediaBox();
                 document.addPage(secondPage);
@@ -90,7 +90,7 @@ public class PdfGenerator {
         contentStream.endText();
     }
 
-    private void createApplicantContent(PDPageContentStream contentStream, PDRectangle mediaBox, ApplicantForm applicant) throws IOException {
+    private void createApplicantContent(PDPageContentStream contentStream, PDRectangle mediaBox, Applicant applicant) throws IOException {
         PDFont fontText = PDType1Font.TIMES_ROMAN;
         contentStream.setFont(fontText, FONT_SIZE_TEXT);
         contentStream.setLeading(20f);
@@ -98,7 +98,7 @@ public class PdfGenerator {
         contentStream.beginText();
         String pattern = "dd-MM-YYYY";
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
-        String dateString = simpleDateFormat.format(applicant.getDate());
+        String dateString = simpleDateFormat.format(applicant.getCreatedDate());
         float text_width = (fontText.getStringWidth(dateString) / 1000.0f) * FONT_SIZE_TEXT;
         contentStream.newLineAtOffset(mediaBox.getWidth() - MARGIN_RIGHT - text_width, mediaBox.getHeight() - BEGIN_CONTENT);
         contentStream.showText(dateString);
@@ -110,14 +110,13 @@ public class PdfGenerator {
         contentStream.showText("AVALDUS");
         contentStream.newLine();
         contentStream.newLine();
-        String faculty = applicant.getFaculty().substring(0, applicant.getFaculty().length() - 1) + "na";
-        String content = String.format("Mina, %s %s, soovin kandideerida %s Üliõpilaskogu volikogusse.",
-                applicant.getFirstName(), applicant.getLastName(), faculty);
+        String content = String.format("Mina, %s %s, soovin kandideerida Üliõpilaskogu volikogusse.",
+                applicant.getFirstName(), applicant.getLastName());
         contentStream.showText(content);
         contentStream.endText();
     }
 
-    private void createApplicatnMotivationLetter(PDPageContentStream contentStream, PDRectangle mediaBox, ApplicantForm applicant) throws IOException {
+    private void createApplicatnMotivationLetter(PDPageContentStream contentStream, PDRectangle mediaBox, Applicant applicant) throws IOException {
         PDFont fontText = PDType1Font.TIMES_ROMAN;
         contentStream.setFont(fontText, FONT_SIZE_TEXT);
 
@@ -125,20 +124,20 @@ public class PdfGenerator {
         float startX = mediaBox.getLowerLeftX() + MARGIN_RIGHT;
         float startY = mediaBox.getUpperRightY() - MARGIN_TOP;
         contentStream.beginText();
-        addParagraph(contentStream, width, startX, startY, applicant.getMotivationLetter(), true);
+        addParagraph(contentStream, width, startX, startY, applicant.getMotivationalLetter(), true);
         contentStream.endText();
     }
 
-    private void createApplicantDataSheet(PDPageContentStream contentStream, PDRectangle mediaBox, ApplicantForm applicant) throws IOException {
+    private void createApplicantDataSheet(PDPageContentStream contentStream, PDRectangle mediaBox, Applicant applicant) throws IOException {
         contentStream.setLeading(23f);
 
         contentStream.beginText();
         contentStream.newLineAtOffset(MARGIN_LEFT, mediaBox.getHeight() - BEGIN_DATA);
         createApplicantDataRow(contentStream, "Eesnimi", applicant.getFirstName());
         createApplicantDataRow(contentStream, "Perekonnanimi", applicant.getLastName());
-        createApplicantDataRow(contentStream, "Matrikklinumber", applicant.getMatrikkel());
-        createApplicantDataRow(contentStream, "Teaduskond", applicant.getFaculty());
-        createApplicantDataRow(contentStream, "Eriala", applicant.getMajor());
+        createApplicantDataRow(contentStream, "Matrikklinumber", applicant.getMatrikkel().toString());
+        createApplicantDataRow(contentStream, "Department", applicant.getDepartment().toString());
+        //createApplicantDataRow(contentStream, "Eriala", applicant.getMajor());
         createApplicantDataRow(contentStream, "Telefon", applicant.getPhoneNumber());
         createApplicantDataRow(contentStream, "E-mail", applicant.getEmail());
         contentStream.endText();

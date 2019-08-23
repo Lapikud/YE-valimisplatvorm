@@ -1,7 +1,9 @@
 package backend.controller;
 
-import backend.bean.ApplicantForm;
+import backend.model.Applicant;
+import backend.repository.ApplicantRepository;
 import backend.util.PdfGenerator;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -16,8 +18,11 @@ import java.io.ByteArrayInputStream;
 @RestController
 public class Controller {
 
+    @Autowired
+    ApplicantRepository repository;
+
     @PostMapping(value = "/generate")
-    public ResponseEntity<InputStreamResource> generatePDF(@Valid @RequestBody ApplicantForm newApplicant) {
+    public ResponseEntity<InputStreamResource> generatePDF(@Valid @RequestBody Applicant newApplicant) {
         PdfGenerator pdfGenerator = new PdfGenerator();
         ByteArrayInputStream bis = pdfGenerator.generateApplicantPdf(newApplicant);
 
