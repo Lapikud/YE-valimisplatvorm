@@ -12,19 +12,14 @@ import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 public class PdfGenerator {
 
     private static int MARGIN_TOP = 160;
-    private static int MARGIN_BOTTOM = 160;
     private static int MARGIN_LEFT = 50;
     private static int MARGIN_RIGHT = 50;
-    private static int BEGIN_DATA = 380;
-    private static int BEGIN_CONTENT = 260;
+    private static int BEGIN_CONTENT = 330;
     private static int FONT_SIZE_TEXT = 12;
 
     public ByteArrayInputStream generateApplicantPdf(Applicant applicant) {
@@ -36,14 +31,11 @@ public class PdfGenerator {
         document.addPage(page);
 
         try {
-            PDImageXObject pdfHeaderImage = PDImageXObject.createFromFile("src/main/resources/template/application_header_old.png", document);
-
             PDPageContentStream contentStream  = new PDPageContentStream(document, page);
 
-            addPdfHeader(contentStream, mediaBox, pdfHeaderImage);
-            createPdfHeaderText(contentStream, mediaBox, new Date());
-            createApplicantContent(contentStream, mediaBox, applicant);
+            addPdfHeader(contentStream, mediaBox, document);
             createApplicantDataSheet(contentStream, mediaBox, applicant);
+            createApplicantContent(contentStream, mediaBox, applicant);
             contentStream.close();
 
             if (applicant.getMotivationalLetter() != null && applicant.getMotivationalLetter().trim().length() > 0) {
@@ -52,7 +44,7 @@ public class PdfGenerator {
                 document.addPage(secondPage);
 
                 contentStream  = new PDPageContentStream(document, secondPage);
-                addPdfHeader(contentStream, mediaBox, pdfHeaderImage);
+                addPdfHeader(contentStream, mediaBox, document);
                 createApplicatnMotivationLetter(contentStream, mediaBox, applicant);
 
                 contentStream.close();
@@ -66,53 +58,54 @@ public class PdfGenerator {
         return new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
     }
 
-    private void addPdfHeader(PDPageContentStream contentStream, PDRectangle mediaBox, PDImageXObject pdfHeaderImage) throws IOException {
-        float scale = mediaBox.getWidth() / pdfHeaderImage.getWidth();
-        contentStream.drawImage(pdfHeaderImage, 0, mediaBox.getHeight() - pdfHeaderImage.getHeight() * scale,
-                mediaBox.getWidth(), pdfHeaderImage.getHeight() * scale);
-    }
+    private void addPdfHeader(PDPageContentStream contentStream, PDRectangle mediaBox, PDDocument document) throws IOException {
+        PDImageXObject pdfHeaderImage = PDImageXObject.createFromFile("src/main/resources/template/TalTech_YE_logo.png", document);
+        PDImageXObject pdfHeaderTextImage = PDImageXObject.createFromFile("src/main/resources/template/Tallinna_Tehnikaylikool.png", document);
 
-    private void createPdfHeaderText(PDPageContentStream contentStream, PDRectangle mediaBox, Date date) throws IOException {
-        PDFont fontText = PDType1Font.TIMES_ROMAN;
-        contentStream.setFont(fontText, FONT_SIZE_TEXT);
-        contentStream.setLeading(20f);
-        contentStream.beginText();
-        contentStream.newLineAtOffset(MARGIN_LEFT, mediaBox.getHeight() - MARGIN_TOP);
+        float scale = (MARGIN_TOP / 1.5f) / pdfHeaderImage.getHeight();
+        contentStream.drawImage(pdfHeaderImage, MARGIN_LEFT, mediaBox.getHeight() - 30 - pdfHeaderImage.getHeight() * scale,
+                pdfHeaderImage.getWidth() * scale, pdfHeaderImage.getHeight() * scale);
 
-        contentStream.showText("TalTech Üliõpilasesinduse valimiskomisjonile");
-        contentStream.newLine();
-        contentStream.showText("Tallinna Tehnikaülikool");
-        contentStream.newLine();
-        contentStream.showText("Ehitajate tee 5");
-        contentStream.newLine();
-        contentStream.showText("19086 TALLINN");
-        contentStream.newLine();
-        contentStream.endText();
+        scale = (MARGIN_TOP / 1f) / pdfHeaderTextImage.getHeight();
+        contentStream.drawImage(pdfHeaderTextImage, mediaBox.getWidth() - MARGIN_RIGHT + 20, mediaBox.getHeight() - 10 - pdfHeaderTextImage.getHeight() * scale,
+                pdfHeaderTextImage.getWidth() * scale, pdfHeaderTextImage.getHeight() * scale);
     }
 
     private void createApplicantContent(PDPageContentStream contentStream, PDRectangle mediaBox, Applicant applicant) throws IOException {
         PDFont fontText = PDType1Font.TIMES_ROMAN;
+        PDFont fontTextBold = PDType1Font.TIMES_BOLD;
         contentStream.setFont(fontText, FONT_SIZE_TEXT);
         contentStream.setLeading(20f);
 
         contentStream.beginText();
-        String pattern = "dd-MM-YYYY";
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
-        String dateString = simpleDateFormat.format(applicant.getCreatedDate());
-        float text_width = (fontText.getStringWidth(dateString) / 1000.0f) * FONT_SIZE_TEXT;
-        contentStream.newLineAtOffset(mediaBox.getWidth() - MARGIN_RIGHT - text_width, mediaBox.getHeight() - BEGIN_CONTENT);
-        contentStream.showText(dateString);
-        contentStream.endText();
-
-        contentStream.beginText();
         contentStream.newLineAtOffset(MARGIN_RIGHT, mediaBox.getHeight() - BEGIN_CONTENT);
+        contentStream.showText("TalTech üliõpilasesindusele");
+        for (int i = 0; i < 4; i++) {
+            contentStream.newLine();
+        }
+
+        contentStream.setFont(fontTextBold, FONT_SIZE_TEXT);
+        contentStream.showText("Kandideerimisavaldus");
+        for (int i = 0; i < 3; i++) {
+            contentStream.newLine();
+        }
+
+        Calendar calendar = new GregorianCalendar();
+        calendar.setTime(applicant.getCreatedDate());
+        String content = String.format("Mina, %s %s, soovin kandideerida %s TalTech üliõpilaste esindajaks %s/%s õppeaastaks.",
+                applicant.getFirstName(), applicant.getLastName(), applicant.getFaculty().toString(),
+                calendar.get(Calendar.YEAR), calendar.get(Calendar.YEAR) + 1);
+
+        float width = mediaBox.getWidth() - 2 * MARGIN_RIGHT;
+        addParagraph(contentStream, width, 0, 0, content, true);
+        for (int i = 0; i < 4; i++) {
+            contentStream.newLine();
+        }
+
+        contentStream.showText("Lugupidamisega,");
         contentStream.newLine();
-        contentStream.showText("AVALDUS");
-        contentStream.newLine();
-        contentStream.newLine();
-        String content = String.format("Mina, %s %s, soovin kandideerida Üliõpilaskogu volikogusse.",
-                applicant.getFirstName(), applicant.getLastName());
-        contentStream.showText(content);
+        String name = String.format("%s %s", applicant.getFirstName(), applicant.getLastName());
+        contentStream.showText(name);
         contentStream.endText();
     }
 
@@ -129,34 +122,33 @@ public class PdfGenerator {
     }
 
     private void createApplicantDataSheet(PDPageContentStream contentStream, PDRectangle mediaBox, Applicant applicant) throws IOException {
-        contentStream.setLeading(23f);
+        contentStream.setLeading(15f);
 
         contentStream.beginText();
-        contentStream.newLineAtOffset(MARGIN_LEFT, mediaBox.getHeight() - BEGIN_DATA);
-        createApplicantDataRow(contentStream, "Eesnimi", applicant.getFirstName());
-        createApplicantDataRow(contentStream, "Perekonnanimi", applicant.getLastName());
-        createApplicantDataRow(contentStream, "Matrikklinumber", applicant.getMatrikkel().toString());
-        createApplicantDataRow(contentStream, "Department", applicant.getDepartment().toString());
-        //createApplicantDataRow(contentStream, "Eriala", applicant.getMajor());
-        createApplicantDataRow(contentStream, "Telefon", applicant.getPhoneNumber());
-        createApplicantDataRow(contentStream, "E-mail", applicant.getEmail());
-        contentStream.endText();
-
-        contentStream.beginText();
-        contentStream.newLineAtOffset(MARGIN_LEFT, MARGIN_BOTTOM);
-        contentStream.showText("(allkirjastatud digitaalselt)");
+        contentStream.newLineAtOffset(0, mediaBox.getHeight() - MARGIN_TOP);
+        createApplicantDataRow(contentStream, mediaBox, "Eesnimi", applicant.getFirstName());
+        createApplicantDataRow(contentStream, mediaBox, "Perekonnanimi", applicant.getLastName());
+        createApplicantDataRow(contentStream, mediaBox, "Telefon", applicant.getPhoneNumber());
+        createApplicantDataRow(contentStream, mediaBox, "E-mail", applicant.getEmail());
+        createApplicantDataRow(contentStream, mediaBox, "Matrikklinumber", applicant.getMatrikkel().toString());
+        createApplicantDataRow(contentStream, mediaBox, "Teaduskond", applicant.getFaculty().toString());
+        createApplicantDataRow(contentStream, mediaBox, "Õppeaste", applicant.getDegree().toString());
         contentStream.endText();
     }
 
-    private void createApplicantDataRow(PDPageContentStream contentStream, String key, String value) throws IOException {
+    private void createApplicantDataRow(PDPageContentStream contentStream, PDRectangle mediaBox, String key, String value) throws IOException {
         PDFont fontHeader = PDType1Font.TIMES_BOLD;
         PDFont fontText = PDType1Font.TIMES_ROMAN;
 
+        float text_width = (fontHeader.getStringWidth(key + ": ") / 1000.0f) * FONT_SIZE_TEXT;
+        text_width += (fontText.getStringWidth(value) / 1000.0f) * FONT_SIZE_TEXT;
+
+        contentStream.newLineAtOffset(mediaBox.getWidth() - MARGIN_RIGHT - text_width, -15);
         contentStream.setFont(fontHeader, FONT_SIZE_TEXT);
         contentStream.showText(key + ": ");
         contentStream.setFont(fontText, FONT_SIZE_TEXT);
         contentStream.showText(value);
-        contentStream.newLine();
+        contentStream.newLineAtOffset(-(mediaBox.getWidth() - MARGIN_RIGHT - text_width), 0);
     }
 
     private static void addParagraph(PDPageContentStream contentStream, float width, float sx,

@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
 import java.io.ByteArrayInputStream;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
 
 @RestController
 public class Controller {
@@ -26,8 +28,10 @@ public class Controller {
         PdfGenerator pdfGenerator = new PdfGenerator();
         ByteArrayInputStream bis = pdfGenerator.generateApplicantPdf(newApplicant);
 
-        String filename = String.format("kandideerimisavaldus_%s_%s.pdf",
-                newApplicant.getFirstName(), newApplicant.getLastName());
+        Calendar calendar = new GregorianCalendar();
+        calendar.setTime(newApplicant.getCreatedDate());
+        String filename = String.format("Kandideerimisavaldus_%s_%s_%s.pdf",
+                newApplicant.getFirstName(), newApplicant.getLastName(), calendar.get(Calendar.YEAR));
 
         HttpHeaders headers = new HttpHeaders();
         headers.add("Content-Disposition", "inline; filename=" + filename);

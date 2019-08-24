@@ -1,6 +1,7 @@
 package backend.model;
 
-import backend.enums.Department;
+import backend.enums.Degree;
+import backend.enums.Faculty;
 
 import javax.persistence.*;
 import javax.validation.constraints.*;
@@ -44,10 +45,15 @@ public class Applicant implements Serializable {
     @Column(name = "email")
     private String email;
 
-    @NotNull(message = "Department must be chosen")
+    @NotNull(message = "Choose your faculty")
     @Enumerated(EnumType.STRING)
-    @Column(name = "department")
-    private Department department;
+    @Column(name = "faculty")
+    private Faculty faculty;
+
+    @NotNull(message = "Choose your degree")
+    @Enumerated(EnumType.STRING)
+    @Column(name = "degree")
+    private Degree degree;
 
     @Column(name = "picture")
     private Blob picture;
