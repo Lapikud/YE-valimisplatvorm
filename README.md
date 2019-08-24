@@ -7,19 +7,19 @@
 * http://localhost:8080
 
 ## Backend requests
-### Applicant form parameters
+### Applicant parameters
 Parameter | Type | Required | Details
 --------- | ---- | -------- | -------
 firstName | String | true | Must not be an empty string
 lastName | String| true | Must not be an empty string
-matrikkel | String | true | Must not be an empty string
-faculty | String | true | Must not be an empty string
-major | String | true | Must not be an empty string
+matrikkel | Long | true |
+faculty | Enum | true |
+degree | Enum | true |
 phoneNumber | String | true | Must not be an empty string
-email | String | true | Must not be an empty string
+email | String | true |
 acceptedTerms | boolean | true | Terms must be accepted
 motivationLetter | String | false | Maximum motivation letter length is 500 characters
-image | BufferedImage | false |
+image | Blob | false |
 
 ### Generate PDF
 POST request http://localhost:8080/generate
@@ -34,10 +34,10 @@ request example
 	"firstName":"John",
 	"lastName":"Smith",
 	"email":"jsmith@taltech.ee",
-	"faculty":"IT-teaduskond",
-	"major":"Informaatika",
-	"matrikkel":"184316IAPB",
-	"phoneNumber":"53668542",
+	"faculty":"INFORMATION_TECHNOLOGIES",
+	"degree":"MASTERS",
+	"matrikkel":184316,
+	"phoneNumber":"536642358542",
 	"acceptedTerms":true
 }
 ```
