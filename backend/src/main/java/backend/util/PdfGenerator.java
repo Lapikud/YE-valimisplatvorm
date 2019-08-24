@@ -32,23 +32,68 @@ public class PdfGenerator {
 
         try {
             PDPageContentStream contentStream  = new PDPageContentStream(document, page);
-
             addPdfHeader(contentStream, mediaBox, document);
             createApplicantDataSheet(contentStream, mediaBox, applicant);
             createApplicantContent(contentStream, mediaBox, applicant);
             contentStream.close();
+            document.save(byteArrayOutputStream);
+            document.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
-            if (applicant.getMotivationalLetter() != null && applicant.getMotivationalLetter().trim().length() > 0) {
-                PDPage secondPage = new PDPage(PDRectangle.A4);
-                mediaBox = secondPage.getMediaBox();
-                document.addPage(secondPage);
+        return new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
+    }
 
-                contentStream  = new PDPageContentStream(document, secondPage);
-                addPdfHeader(contentStream, mediaBox, document);
-                createApplicatnMotivationLetter(contentStream, mediaBox, applicant);
+    public ByteArrayInputStream generateApplicantMotivationLetterPdf(Applicant applicant) {
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
 
-                contentStream.close();
+        PDDocument document = new PDDocument();
+        PDPage page = new PDPage(PDRectangle.A4);
+        PDRectangle mediaBox = page.getMediaBox();
+        document.addPage(page);
+        PDFont fontTextBold = PDType1Font.TIMES_BOLD;
+        PDFont fontText = PDType1Font.TIMES_ROMAN;
+
+        try {
+            PDPageContentStream contentStream  = new PDPageContentStream(document, page);
+            addPdfHeader(contentStream, mediaBox, document);
+            contentStream.setLeading(20f);
+
+            contentStream.beginText();
+            float text_width = (fontTextBold.getStringWidth("Motivatsioonikiri") / 1000.0f) * FONT_SIZE_TEXT;
+            contentStream.newLineAtOffset((mediaBox.getWidth() / 2) - (text_width / 2), mediaBox.getHeight() - MARGIN_TOP - 50);
+            contentStream.setFont(fontTextBold, FONT_SIZE_TEXT);
+            contentStream.showText("Motivatsioonikiri");
+            contentStream.newLineAtOffset(-((mediaBox.getWidth() / 2) - (text_width / 2)), 0);
+            contentStream.newLineAtOffset(MARGIN_LEFT, 0);
+            for (int i = 0; i < 3; i++) {
+                contentStream.newLine();
             }
+
+            contentStream.setFont(fontText, FONT_SIZE_TEXT);
+            Calendar calendar = new GregorianCalendar();
+            calendar.setTime(applicant.getCreatedDate());
+            String content = String.format("Käesolevas motivatsioonikirjas annan ülevaate põhjustest, miks soovin kandideerida %s TalTech üliõpilaste esindajaks %s/%s õppeaastaks.",
+                    applicant.getFaculty().toString(), calendar.get(Calendar.YEAR), calendar.get(Calendar.YEAR) + 1);
+            float width = mediaBox.getWidth() - 2 * MARGIN_RIGHT;
+            addParagraph(contentStream, width, 0, 0, content, true);
+            contentStream.endText();
+
+            if (applicant.getMotivationLetter() != null && applicant.getMotivationLetter().trim().length() > 0) {
+                createApplicatnMotivationLetter(contentStream, mediaBox, applicant);
+            } else {
+                contentStream.beginText();
+            }
+
+            contentStream.newLine();
+            contentStream.showText("Lugupidamisega,");
+            contentStream.newLine();
+            String name = String.format("%s %s", applicant.getFirstName(), applicant.getLastName());
+            contentStream.showText(name);
+            contentStream.endText();
+
+            contentStream.close();
             document.save(byteArrayOutputStream);
             document.close();
         } catch (IOException e) {
@@ -115,10 +160,9 @@ public class PdfGenerator {
 
         float width = mediaBox.getWidth() - 2 * MARGIN_RIGHT;
         float startX = mediaBox.getLowerLeftX() + MARGIN_RIGHT;
-        float startY = mediaBox.getUpperRightY() - MARGIN_TOP;
+        float startY = mediaBox.getUpperRightY() - BEGIN_CONTENT;
         contentStream.beginText();
-        addParagraph(contentStream, width, startX, startY, applicant.getMotivationalLetter(), true);
-        contentStream.endText();
+        addParagraph(contentStream, width, startX, startY, applicant.getMotivationLetter(), true);
     }
 
     private void createApplicantDataSheet(PDPageContentStream contentStream, PDRectangle mediaBox, Applicant applicant) throws IOException {

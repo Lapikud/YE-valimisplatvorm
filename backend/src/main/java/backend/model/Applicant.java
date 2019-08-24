@@ -59,8 +59,8 @@ public class Applicant implements Serializable {
     private Blob picture;
 
     @Size(max = 500, message = "Maximum motivation letter length is 500 characters")
-    @Column(name = "motivationalletter")
-    private String motivationalLetter;
+    @Column(name = "motivationletter")
+    private String motivationLetter;
 
     @NotNull
     @AssertTrue(message = "Terms must be accepted")

@@ -23,7 +23,7 @@ public class Controller {
     @Autowired
     ApplicantRepository repository;
 
-    @PostMapping(value = "/generate")
+    @PostMapping(value = "/generate/application")
     public ResponseEntity<InputStreamResource> generatePDF(@Valid @RequestBody Applicant newApplicant) {
         PdfGenerator pdfGenerator = new PdfGenerator();
         ByteArrayInputStream bis = pdfGenerator.generateApplicantPdf(newApplicant);
@@ -33,6 +33,23 @@ public class Controller {
         String filename = String.format("Kandideerimisavaldus_%s_%s_%s.pdf",
                 newApplicant.getFirstName(), newApplicant.getLastName(), calendar.get(Calendar.YEAR));
 
+        return createPDFResponseEntity(bis, filename);
+    }
+
+    @PostMapping(value = "/generate/motivationletter")
+    public ResponseEntity<InputStreamResource> generateMotivationLetterPDF(@Valid @RequestBody Applicant newApplicant) {
+        PdfGenerator pdfGenerator = new PdfGenerator();
+        ByteArrayInputStream bis = pdfGenerator.generateApplicantMotivationLetterPdf(newApplicant);
+
+        Calendar calendar = new GregorianCalendar();
+        calendar.setTime(newApplicant.getCreatedDate());
+        String filename = String.format("Motivatsioonikiri_%s_%s_%s.pdf",
+                newApplicant.getFirstName(), newApplicant.getLastName(), calendar.get(Calendar.YEAR));
+
+        return createPDFResponseEntity(bis, filename);
+    }
+
+    private ResponseEntity<InputStreamResource> createPDFResponseEntity(ByteArrayInputStream bis, String filename) {
         HttpHeaders headers = new HttpHeaders();
         headers.add("Content-Disposition", "inline; filename=" + filename);
 
